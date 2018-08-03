@@ -3,7 +3,7 @@ library(RPostgreSQL)
 library(dotenv)
 library(dplyr)
 
-load_dot_env(file = "/users/junaidbutt/developer/.env")
+load_dot_env(file = ".env")
 user <- Sys.getenv("LUSERNAME")
 password <- Sys.getenv("LPASSWORD")
 host <- Sys.getenv("HOST")
@@ -49,7 +49,7 @@ getSQL <- function(filepath, channels.table, first.touch.table, splash.page.view
 
 fetch.business <- function() {
 # Use SQL query to form the data for scorecard
-scorecard <- dbGetQuery(con, getSQL("//Users/junaidbutt/developer/customer_scorecard/customer_scorecard.sql"))
+scorecard <- dbGetQuery(con, getSQL("./customer_scorecard.sql"))
 
 scorecard.filt <-  scorecard %>% 
   filter(bus_email_flag == 1) %>% 
@@ -64,7 +64,7 @@ return(scorecart.sorted)
 
 fetch.personal <- function() {
   # Use SQL query to form the data for scorecard
-  scorecard <- dbGetQuery(con, getSQL("//Users/junaidbutt/developer/customer_scorecard/customer_scorecard.sql"))
+  scorecard <- dbGetQuery(con, getSQL("./customer_scorecard.sql"))
   
   scorecard.filt <-  scorecard %>% 
     filter(bus_email_flag == 0) %>% 
@@ -79,7 +79,7 @@ fetch.personal <- function() {
 
 fetch.all <- function() {
   # Use SQL query to form the data for scorecard
-  scorecard <- dbGetQuery(con, getSQL("//Users/junaidbutt/developer/customer_scorecard/customer_scorecard.sql"))
+  scorecard <- dbGetQuery(con, getSQL("./customer_scorecard.sql"))
   
   scorecard.filt <-  scorecard %>% 
     select(account_id, email, dashboard_daily_pageviews, engagement_frequency, number_of_named_apps, tech_info, active_app, multiple_env_flag,
@@ -92,12 +92,3 @@ fetch.all <- function() {
 }
 
 
-# ftc.sort <- function(scorecard) {
-#   # Average 
-#   scorecard <- scorecard %>% 
-#     group_by(ftc) %>% 
-#     summarise(avg_score = mean(total, na.rm = TRUE)) %>% 
-#     arrange(desc(avg_score))
-#   
-#   return(scorecard)
-# }
