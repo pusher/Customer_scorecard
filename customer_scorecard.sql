@@ -513,7 +513,7 @@ account_id
 , active_app
 , multiple_env_flag
 , collaborators
-, case when (tutorial_views > 0 or docs_page_views > 1 or (tutorial_views > 0 and docs_page_views > 1)) then 1 else 0 end as tut_doc_pv
+, case when ((tutorial_views = 0 or docs_page_views > 0) or (tutorial_views > 0 and docs_page_views = 0) or (tutorial_views > 0 and docs_page_views > 0)) then 1 else 0 end as tut_doc_pv
 from
 doc_acct),
 
@@ -583,7 +583,7 @@ account_id
 , multiple_env_flag
 , collaborators
 , tut_doc_pv
-, case when (con_soft_limit_flag > 0 or mes_soft_limit_flag > 1 or (con_soft_limit_flag > 0 and mes_soft_limit_flag > 1)) then 1 else 0 end as hit_soft_limit
+, case when ((con_soft_limit_flag = 0 or mes_soft_limit_flag > 0) or (con_soft_limit_flag > 0 and mes_soft_limit_flag = 1) or (con_soft_limit_flag > 0 or mes_soft_limit_flag > 0)) then 1 else 0 end as hit_soft_limit
 from
 mes_acct),
 
@@ -611,244 +611,12 @@ account ac
 on
 mes.account_id = ac.id),
 
- -- Join first touch channel
-fts as (
-SELECT
-channels_usage.id  AS account_id,
-case
-when channels_usage.heroku = TRUE then 'HEROKU'
-else CASE
-
-WHEN UPPER(SPLIT_PART(SPLIT_PART(first_touch.url,'utm_medium=',2),'&',1)) = 'CPC' then 'PAID MARKETING'
-WHEN UPPER(SPLIT_PART(SPLIT_PART(first_touch.url,'utm_medium=',2),'&',1)) = 'PAID' then 'PAID MARKETING'
-WHEN first_touch.url like '%utm_source=adwords%' THEN 'PAID MARKETING'
-WHEN first_touch.url like '%utm_medium=email%' then 'EMAIL'
-WHEN first_touch.url like '%utm_medium=referral%' then 'REFERRALS'
-WHEN first_touch.url like '%utm_medium=social%' then 'SOCIAL'
-WHEN first_touch.url like '%?growth%' then 'PAID MARKETING'
-WHEN  first_touch.referrer like '%growth.pusher%' THEN 'PAID MARKETING'
-WHEN first_touch.url LIKE '%gclid=%' THEN 'PAID MARKETING'
-WHEN first_touch.referrer is not null then
-CASE
-WHEN first_touch.referrer like '%blog.pusher.com%' then 'BLOG'
-WHEN first_touch.referrer like '%https://pusher.com%' then 'PUSHER'
-
-
-WHEN first_touch.referrer like '%github.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%laravel.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%laracasts.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%realtime-notifications.herokuapp.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%habrahabr.ru%' then 'REFERRALS'
-WHEN first_touch.referrer like '%pusher-community.github.io%' then 'REFERRALS'
-WHEN first_touch.referrer like '%disq.us%' then 'REFERRALS'
-WHEN first_touch.referrer like '%https://medium.%' then 'REFERRALS'
-WHEN first_touch.referrer like '%http://medium.%' then 'REFERRALS'
-WHEN first_touch.referrer like '%.medium.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%sitepoint.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%hackernoon.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%producthunt.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%codementor.io%' then 'REFERRALS'
-WHEN first_touch.referrer like '%workable.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%cloud.google.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%laravel-news.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%pusher-chat-demo.herokuapp.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%soapbox.gg%' then 'REFERRALS'
-WHEN first_touch.referrer like '%code.tutsplus.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%appcoda.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%auth0.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%techcrunch.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%scotch.io%' then 'REFERRALS'
-WHEN first_touch.referrer like '%jslive.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%stackoverflow.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%wordpress.org%' then 'REFERRALS'
-WHEN first_touch.referrer like '%libhunt.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%recode.net%' then 'REFERRALS'
-WHEN first_touch.referrer like '%dashboard.heroku.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%css-tricks.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%tympanus.net%' then 'REFERRALS'
-WHEN first_touch.referrer like '%barrucadu.co.uk%' then 'REFERRALS'
-WHEN first_touch.referrer like '%blog.sstorie.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%rethinkdb.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%tumblr.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%jplhomer.org%' then 'REFERRALS'
-WHEN first_touch.referrer like '%learn.fullstackacademy.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%murze.be%' then 'REFERRALS'
-WHEN first_touch.referrer like '%fullstackpython.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%vue-chartjs.org%' then 'REFERRALS'
-WHEN first_touch.referrer like '%d.laravel-china.org%' then 'REFERRALS'
-WHEN first_touch.referrer like '%london.startups-list.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%laravel.ru%' then 'REFERRALS'
-WHEN first_touch.referrer like '%blog.carbonfive.com%' then 'REFERRALS'
-WHEN first_touch.referrer like '%learninglaravel.net%' then 'REFERRALS'
-WHEN first_touch.referrer like '%android-app://com.medium.reader%' then 'REFERRALS'
-
-
-WHEN first_touch.referrer like '%hashnode.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%segmentfault.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%dev.to%' then 'SOCIAL'
-WHEN first_touch.referrer like '%t.co%' then 'SOCIAL'
-WHEN first_touch.referrer like '%lobste.rs%' then 'SOCIAL'
-WHEN first_touch.referrer like '%news.ycombinator.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%reddit.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%facebook.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%twitter.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%m.facebook.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%l.facebook.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%away.vk.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%youtube.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%plus.google.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%linkedin.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%quora.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%accounts.youtube.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%plus.url.google.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%lm.facebook.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%meetup.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%web.facebook.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%amp.reddit.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%echojs.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%javascript.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%laravel-news.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%frontendfront.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%qiita.com%' then 'SOCIAL'
-
-WHEN first_touch.referrer like '%android-app://com.twitter.android%' then 'SOCIAL'
-WHEN first_touch.referrer like '%android-app://m.facebook.com%' then 'SOCIAL'
-WHEN first_touch.referrer like '%android-app://org.telegram.messenger%' then 'SOCIAL'
-WHEN first_touch.referrer like '%android-app://com.Slack%' then 'SOCIAL'
-
-
-WHEN first_touch.referrer like '%google.%' then 'ORGANIC'
-WHEN first_touch.referrer like '%bing%' then 'ORGANIC'
-WHEN first_touch.referrer like '%baidu%' then 'ORGANIC'
-WHEN first_touch.referrer like '%yandex%' then 'ORGANIC'
-WHEN first_touch.referrer like '%yahoo%' then 'ORGANIC'
-WHEN first_touch.referrer like '%ask%' then 'ORGANIC'
-WHEN first_touch.referrer like '%seznam%' then 'ORGANIC'
-WHEN first_touch.referrer like '%duckduckgo%' then 'ORGANIC'
-WHEN first_touch.referrer like '%hn.algolia.com%' then 'ORGANIC'
-WHEN first_touch.referrer like '%utm_medium=organic%' then 'ORGANIC'
-
-
-WHEN first_touch.referrer like '%JSK%' then 'EMAIL'
-WHEN first_touch.referrer like '%weekly%' then 'EMAIL'
-WHEN first_touch.referrer like '%digest%' then 'EMAIL'
-WHEN first_touch.referrer like '%newsletter%' then 'EMAIL'
-WHEN first_touch.referrer like '%mail.google.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%link.oreilly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%outlook.live.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%golangweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%mail.qq.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%accounts.google%' then 'EMAIL'
-WHEN first_touch.referrer like '%mailchi.mp%' then 'EMAIL'
-WHEN first_touch.referrer like '%react.statuscode.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%campaign-archive.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%mail01.tinyletterapp.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%mail.yahoo.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%dotnetweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%androidweekly.net%' then 'EMAIL'
-WHEN first_touch.referrer like '%learninglaravel.net%' then 'EMAIL'
-WHEN first_touch.referrer like '%net.litmus.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%dotnetweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%androiddevdigest.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%kotlinweekly.net%' then 'EMAIL'
-WHEN first_touch.referrer like '%csharpdigest.net%' then 'EMAIL'
-WHEN first_touch.referrer like '%cronweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%iosdevweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%digest.appcoda.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%digest.mbltdev.ru%' then 'EMAIL'
-WHEN first_touch.referrer like '%indieiosfocus.curated.co%' then 'EMAIL'
-WHEN first_touch.referrer like '%javascriptweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%fivejs.codeschool.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%smashingmagazine.com/the-smashing-newsletter%' then 'EMAIL'
-WHEN first_touch.referrer like '%softwareleadweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%umaar.com/dev-tips%' then 'EMAIL'
-WHEN first_touch.referrer like '%founderweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%frontendfoc.us%' then 'EMAIL'
-WHEN first_touch.referrer like '%greenruby.org%' then 'EMAIL'
-WHEN first_touch.referrer like '%hackingui.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%pointer.io%' then 'EMAIL'
-WHEN first_touch.referrer like '%hackernewsletter.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%thisweekindomains.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%wdrl.info%' then 'EMAIL'
-WHEN first_touch.referrer like '%webopsweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%ben-evans.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%hndigest.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%thejournal.email%' then 'EMAIL'
-WHEN first_touch.referrer like '%lastweekinaws.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%porter.io%' then 'EMAIL'
-WHEN first_touch.referrer like '%programmingdigest.net%' then 'EMAIL'
-WHEN first_touch.referrer like '%startupresources.io%' then 'EMAIL'
-WHEN first_touch.referrer like '%softwareclown%' then 'EMAIL'
-WHEN first_touch.referrer like '%codewithoutrules.com/softwareclown%' then 'EMAIL'
-WHEN first_touch.referrer like '%securitynewsletter.co%' then 'EMAIL'
-WHEN first_touch.referrer like '%realtimeweekly.co%' then 'EMAIL'
-WHEN first_touch.referrer like '%list-manage.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%nodeweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%nosqlweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%phpweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%postgresweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%mindtheproduct.com/product-management-newsletter%' then 'EMAIL'
-WHEN first_touch.referrer like '%newsletter.pythontips.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%importpython.com/newsletter%' then 'EMAIL'
-WHEN first_touch.referrer like '%pythonweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%pycoders.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%raspiweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%reactjsnewsletter.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%react.statuscode.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%reactdigest.net%' then 'EMAIL'
-WHEN first_touch.referrer like '%rubyweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%scalatimes.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%swiftweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%swiftnews.curated.co%' then 'EMAIL'
-WHEN first_touch.referrer like '%arkitweekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%andybargh.com/swiftdevelopments%' then 'EMAIL'
-WHEN first_touch.referrer like '%typescript-weekly.com%' then 'EMAIL'
-WHEN first_touch.referrer like '%fullstackfeed.com/typescript-newsletter%' then 'EMAIL'
-WHEN first_touch.referrer like '%emberweekly.com%' then 'EMAIL'
-
-ELSE 'OTHER'
-END
-
-WHEN first_touch.url LIKE '%utm_source=%' THEN 'OTHER'
-WHEN first_touch.url is NULL then 'AD BLOCKER'
-WHEN first_touch.referrer is NULL then 'DIRECT'
-ELSE 'DIRECT'
-END
-end  AS first_touch_channel
-FROM LOOKER_SCRATCH_CHANNELS_TABLE AS channels_usage
-FULL OUTER JOIN LOOKER_SCRATCH_FIRST_TOUCH_TABLE AS first_touch ON (first_touch.account_id::int) =  channels_usage.id
-),
-
-fts_grouped as (
-select
-account_id
-, first_touch_channel
-from
-fts
-group by
-account_id
-, first_touch_channel),
-
--- Add first touch channel flag
-scorecard_events_with_fts as (
-select
-sme.*
-, case when fts.first_touch_channel is null then 'DIRECT' else fts.first_touch_channel end as FTC
-from
-scorecard_events sme
-left join
-fts_grouped fts
-on
-sme.account_id = fts.account_Id),
-
-
 -- Multiple columns by predefined weightings
 weighted_scorecard as (
 select
 account_id
 , bus_email_flag
 , email
-, FTC
 , (dashboard_daily_pageviews * 2) as dashboard_daily_pageviews
 , (engagement_frequency * 2) as engagement_frequency
 , (number_of_named_apps * 2) as number_of_named_apps
@@ -862,9 +630,27 @@ account_id
   + (tech_info * 2) + (active_app * 2) + multiple_env_flag + collaborators
   + tut_doc_pv + hit_soft_limit as total
 from
-scorecard_events_with_fts)
+scorecard_events),
 
-select * from weighted_scorecard
+-- Scale weights to be out of 100 (max score is 50 so multiply everything by 2)
+scaled_scorecard as (
+select
+account_id
+, bus_email_flag
+, email
+, (dashboard_daily_pageviews * 2) as dashboard_daily_pageviews
+, (engagement_frequency * 2) as engagement_frequency
+, (number_of_named_apps * 2) as number_of_named_apps
+, (tech_info * 2) as tech_info
+, (active_app * 2) as active_app
+, (multiple_env_flag * 2) as multiple_env_flag
+, (collaborators * 2) as collaborators
+, (tut_doc_pv * 2) as tut_doc_pv
+, (hit_soft_limit * 2) as hit_soft_limit
+, (total * 2) as total
+from weighted_scorecard)
+
+select * from scaled_scorecard
 
 ;
 
