@@ -182,8 +182,8 @@ with np_accounts as (
                                    select
                                    pv.account_id
                                    , count(distinct pv.created_at::date) as dashboard_daily_pageviews
-                                   from
-                                   page_view pv
+                                   from ",
+                                   splash.page.views.table," pv
                                    left join
                                    chargify_signup_success css
                                    on
@@ -192,8 +192,8 @@ with np_accounts as (
                                    (pv.created_at < css.created_at or css.created_at is null) and
                                    pv.created_at between (now() - interval '30 days') and now() and
                                    pv.url like '%dashboard.pusher.com%' and
-                                   pv.url not like '%dashboard.pusher.com/account%' and
-                                   isnumeric(pv.account_id) = TRUE
+                                   pv.url not like '%dashboard.pusher.com/account%'
+                                   
                                    group by
                                    pv.account_id),
                                    
@@ -854,8 +854,8 @@ with np_accounts as (
                                      select
                                      pv.account_id
                                      , count(distinct pv.created_at::date) as dashboard_daily_pageviews
-                                     from
-                                     page_view pv
+                                     from ",
+                                     splash.page.views.table, " pv
                                      left join
                                      chargify_signup_success css
                                      on
@@ -864,8 +864,8 @@ with np_accounts as (
                                      (pv.created_at < css.created_at or css.created_at is null) and
                                      pv.created_at between (now() - interval '30 days') and now() and
                                      pv.url like '%dashboard.pusher.com%' and
-                                     pv.url not like '%dashboard.pusher.com/account%' and
-                                     isnumeric(pv.account_id) = TRUE
+                                     pv.url not like '%dashboard.pusher.com/account%' 
+                                     
                                      group by
                                      pv.account_id),
                                      
@@ -1526,8 +1526,8 @@ with np_accounts as (
                                      select
                                      pv.account_id
                                      , count(distinct pv.created_at::date) as dashboard_daily_pageviews
-                                     from
-                                     page_view pv
+                                     from ",
+                                     splash.page.views.table ," pv
                                      left join
                                      chargify_signup_success css
                                      on
@@ -1536,8 +1536,8 @@ with np_accounts as (
                                      (pv.created_at < css.created_at or css.created_at is null) and
                                      pv.created_at between (now() - interval '30 days') and now() and
                                      pv.url like '%dashboard.pusher.com%' and
-                                     pv.url not like '%dashboard.pusher.com/account%' and
-                                     isnumeric(pv.account_id) = TRUE
+                                     pv.url not like '%dashboard.pusher.com/account%' 
+                                     
                                      group by
                                      pv.account_id),
                                      
@@ -2204,17 +2204,17 @@ with np_accounts as (
                                      pageviews as (
                                      select
                                      pv.path
-                                     , pv.title
+                                     
                                      , pv.created_at::date
-                                     , pv.email
+                                     
                                      , pv.account_id
                                      , pv.referrer
                                      , pv.url
                                      , pv.id
-                                     , pv.utc_datetime
+                                     
                                      , pv.anonymous_id
-                                     from
-                                     page_view pv
+                                     from ",
+                                     splash.page.views.table," pv
                                      left join
                                      chargify_signup_success css
                                      on
@@ -2223,18 +2223,18 @@ with np_accounts as (
                                      (pv.created_at < css.created_at or css.created_at is null) and
                                      pv.created_at between (now() - interval '60 days') and now() and
                                      pv.url like '%dashboard.pusher.com%' and
-                                     pv.url not like '%dashboard.pusher.com/account%' and
-                                     isnumeric(pv.account_id) = TRUE
+                                     pv.url not like '%dashboard.pusher.com/account%' 
+                                     
                                      group by
                                      pv.path
-                                     , pv.title
+
                                      , pv.created_at::date
-                                     , pv.email
+                                     
                                      , pv.account_id
                                      , pv.referrer
                                      , pv.url
                                      , pv.id
-                                     , pv.utc_datetime
+                                     
                                      , pv.anonymous_id
                                      ),
                                      
