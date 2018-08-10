@@ -8,6 +8,7 @@ library(dplyr)
 library(stringr)
 library(stringi)
 library(memoise)
+library(rsconnect)
 
 source("data.R") 
 
@@ -59,7 +60,22 @@ ui <- fluidPage(
 # Server function
 # Define server logic required to draw a histogram ----
 server <- function(input, output, session) {
+  
+  # Progress bar
+  progress <- Progress$new(session, min=1, max=15)
+  on.exit(progress$close())
+  
+  progress$set(message = 'Loading data',
+               detail = 'This may take a while...')
+  
+  for (i in 1:15) {
+    progress$set(value = i)
+    Sys.sleep(0.5)
+  }
+  
   hist.scores <- fetch.hist()
+  
+  
   observeEvent(input$scorecard.run, {  
   
     # Progress bar
