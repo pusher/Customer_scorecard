@@ -41,7 +41,7 @@ with np_accounts as (
                                    email not like '%invalid%' and
                                    email not like 'invalid%' and
                                    email not like '%invalid' and
-                                   created_at between '01-Jan-2018' and now() ),
+                                   created_at between '01-Aug-2018' and now() ),
                                    
                                    -- create a business email flag
                                    -- all business emails in past 3 months
@@ -713,7 +713,7 @@ with np_accounts as (
                                      email not like '%invalid%' and
                                      email not like 'invalid%' and
                                      email not like '%invalid' and
-                                     created_at between '01-Jan-2018' and now() ),
+                                     created_at between '01-Aug-2018' and now() ),
                                      
                                      -- create a business email flag
                                      -- all business emails in past 3 months
@@ -1385,7 +1385,7 @@ with np_accounts as (
                                      email not like '%invalid%' and
                                      email not like 'invalid%' and
                                      email not like '%invalid' and
-                                     created_at between '01-Jan-2018' and now() ),
+                                     created_at between '01-Aug-2018' and now() ),
                                      
                                      -- create a business email flag
                                      -- all business emails in past 3 months
@@ -2054,7 +2054,7 @@ with np_accounts as (
                                      email not like '%invalid%' and
                                      email not like 'invalid%' and
                                      email not like '%invalid' and
-                                     created_at between '01-Jan-2018' and now() ),
+                                     created_at between '01-Aug-2018' and now() ),
                                      
                                      -- create a business email flag
                                      -- all business emails in past 3 months

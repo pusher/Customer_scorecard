@@ -32,7 +32,9 @@ ui <- fluidPage(
                       actionButton("scorecard.run", label = "Run"),
                       
                       # Button
-                      downloadButton("scorecard.download", label = "Download")
+                      downloadButton("scorecard.download", label = "Download Scorecard"),
+                      
+                      downloadButton("scorecard.download.trend", label = "Download Trended Scores")
                       
                       , width = 4
                 ),
@@ -43,8 +45,6 @@ ui <- fluidPage(
                   fluidRow(
 
                     DT::dataTableOutput("customer_scorecard.table"),
-                    
-                    #DT::dataTableOutput("customer_scorecard.drilldown")
                     
                     plotOutput("customer_scorecard.drilldown")
                     
@@ -102,7 +102,7 @@ server <- function(input, output, session) {
                           "Personal" = fetch.personal(),
                           "All" = fetch.all())
       
-      #hist.scores <- fetch.hist()
+    
     
     # display the data that is available to be drilled down
     output$customer_scorecard.table <- DT::renderDataTable(scorecard, selection = 'single')
@@ -125,9 +125,8 @@ server <- function(input, output, session) {
         dplyr::rename(date = end_date)
     })
     
-    # display the subsetted data
-    #output$customer_scorecard.drilldown <- DT::renderDataTable(drilldata())
     
+    # Graph
     output$customer_scorecard.drilldown <- renderPlot({
       
       ggplot(data = drilldata(), aes(x = date, y = score)) + geom_line(color = "red") +
@@ -135,20 +134,35 @@ server <- function(input, output, session) {
         theme(plot.title = element_text(hjust = 0.5))
     })
     
+    # display the subsetted data
+    #customer_scorecard.drilldown.trend <- as.data.frame(drilldata())
+    
       
 
     # Downloadable csv of selected dataset ----
     
     output$scorecard.download <- downloadHandler(
-      
+
       filename = function() {
         paste("Customer_Scorecard", "_", input$scorecard.email.type, "_", Sys.Date(), ".csv", sep = "")
       },
-      
+
       content = function(file) {
         write.csv(scorecard, file, row.names = FALSE)
       }
-      
+
+    )
+    
+    output$scorecard.download.trend <- downloadHandler(
+
+      filename = function() {
+        paste("Customer_Scorecard_trend", "_", scorecard[as.integer(input$customer_scorecard.table_rows_selected), ]$email, "_", Sys.Date(), ".csv", sep = "")
+      },
+
+      content = function(file) {
+        write.csv(drilldata(), file, row.names = FALSE)
+      }
+
     )
   
     })
